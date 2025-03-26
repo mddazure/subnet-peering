@@ -361,7 +361,7 @@ Code: VnetAddressSpacesOverlap
 This demonstrates that subnet peering is allows for the partial peering of vnets that contain overlapping ip space. As discussed, this can be very helpful in scenario's where private ip space is in short supply.
 
 # Looking ahead
-Subnet peering is now available in all Azure regions: feel free test, experiment and use in production.
+Subnet peering is now available in all Azure regions: feel free to test, experiment and use in production.
 
 The feature is currently only available through the latest versions of the [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/network/vnet/peering?view=azure-cli-latest), [Bicep](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-bicep), [ARM template](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-bicep), [Terraform](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-terraform) and Powershell.
 
