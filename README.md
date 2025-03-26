@@ -1,8 +1,8 @@
 # Subnet Peering
 
-## VNET Peering
+## The Basics: VNET Peering
 
-Virtual Networks in Azure can be connected thorugh [VNET Peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview). Peered VNETs become one routing domain, meaning that the entire IP space of each VNET is visible to an reachable from the other VNET. This is great for many applications: wire speed connectivity without gateways or other complexitiies.
+Virtual Networks in Azure can be connected thorugh [VNET Peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview). Peered VNETs become one routing domain, meaning that the entire IP space of each VNET is visible to and reachable from the other VNET. This is great for many applications: wire speed connectivity without gateways or other complexitiies.
 
 In this diagram, vnet-left and vnet-right are peered: 
 
@@ -41,7 +41,7 @@ There are situations where completely merging the address spaces of VNETs is not
 
 Think of micro-segmentation: only the front-end of a multi-tier application must be exposed and accessible from outside the VNET, with the application- and database tiers ideally remaining isolated. Network Security Groups are now used to achieve isolation; they can block access to the internal tiers from sources outside of the vnet's ip range, or the front-end subnet.
 
-Another scenario is IP address space exhaustion: private ip space becomes a scarce resource in many companies. There may not be not free space enough available to assign each vnet a unique, routable, segment large enough to accomodate all resources hosted in each vnet. Again, there may not be a need for all resources to have a routable ip address as they do not need to be accessible from outside the vnet.
+Another scenario is IP address space exhaustion: private ip space is a scarce resource in many companies. There may not be enough free space available to assign each vnet a unique, routable, segment large enough to accomodate all resources hosted in each vnet. Again, there may not be a need for all resources to have a routable ip address as they do not need to be accessible from outside the vnet.
 
 ## The Solution: Subnet Peering
 The above scenario's could be solved for if it were possible to selectively share a vnet's address range across a peering. 
@@ -55,23 +55,30 @@ Subnet Peering is not yet available through the Azure portal, but can be configu
 - `--remote-vnet-names`: list of subnets to be peered in the remote vnet (i.e. the vnet called out in the `--remote-vnet` parameter)
 - `--enable-only-ipv6 {0(default), 1, f, false, n, no, t, true, y, yes}`: if set to true, peers only ipv6 space in dual stack vnets.
 
-:exclamation: Although Subnet Peering is Generally Available in all Azure regions, subscription allow-listing through this [form](https://forms.office.com/pages/responsepage.aspx?id=v4j5cvGGr0GRqy180BHbR4Qnh_A4SJlJmB_ayXa7POFUNzlOVDdXQlY5WUxHWkcyNTZPRFpQV01VUi4u&route=shorturl) is required. Please read and be aware of the caveats under point 11 on the form.
+:exclamation: Although Subnet Peering is available in all Azure regions, subscription allow-listing through this [form](https://forms.office.com/pages/responsepage.aspx?id=v4j5cvGGr0GRqy180BHbR4Qnh_A4SJlJmB_ayXa7POFUNzlOVDdXQlY5WUxHWkcyNTZPRFpQV01VUi4u&route=shorturl) is still required. Please read and be aware of the caveats under point 11 on the form.
 
 ### Segmentation
 
 This command peers `subnet1` in `vnet-left` to `subnet0` and `subnet2` in `right-vnet`:
 
-`az network vnet peering create -g sn-rg -n left0-right0 --vnet-name vnet-left --local-subnet-names subnet1 --remote-subnet-names subnet0 subnet2 --remote-vne vnet-right --peer-complete-vnets 0 --allow-vnet-access 1`
+```
+az network vnet peering create -g sn-rg -n left0-right0 --vnet-name vnet-left --local-subnet-names subnet1 --remote-subnet-names subnet0 subnet2 --remote-vne vnet-right --peer-complete-vnets 0 --allow-vnet-access 1
+```
 
 Then establish the peering in the other direction:
 
-`az network vnet peering create -g sn-rg -n right0-left0 --vnet-name vnet-right --local-subnet-names subnet0 subnet2 --remote-subnet-names subnet1 --remote-vne vnet-left --peer-complete-vnets 0 --allow-vnet-access 1`
+```
+az network vnet peering create -g sn-rg -n right0-left0 --vnet-name vnet-right --local-subnet-names subnet0 subnet2 --remote-subnet-names subnet1 --remote-vne vnet-left --peer-complete-vnets 0 --allow-vnet-access 1
+```
 
 This leaves `subnet0` and `subnet2` in `vnet-left`, and `subnet1` in `vnet-right` disconnected, effectively creating segmentation between the peered vnets without the use of NSGs.
 
 Details of the peerings in both directions are below. Notice the localAddressSpace and remoteAddressSpace prefixes are those of the peered local and remote subnets.
 
-`az network vnet peering show -g sn-rg -n left0-right0 --vnet-name vnet-left`  
+```
+az network vnet peering show -g sn-rg -n left0-right0 --vnet-name vnet-left
+```
+
 ```json       
 {
   "allowForwardedTraffic": false,
@@ -197,6 +204,8 @@ Inspecting the effective routes on vm `left-1` shows it has routes for `subnet0`
 
 ```
 az network nic show-effective-route-table -g sn-rg -n left-1701 -o table
+```
+```
 Source    State    Address Prefix    Next Hop Type    Next Hop IP
 --------  -------  ----------------  ---------------  -------------
 Default   Active   10.0.0.0/16       VnetLocal
@@ -210,6 +219,8 @@ Note that vm's `left-0` and `left-1` *also* have routes for the same subnets in 
 
 ```
 az network nic show-effective-route-table -g sn-rg -n left-0681 -o table
+```
+```
 Source    State    Address Prefix    Next Hop Type    Next Hop IP
 --------  -------  ----------------  ---------------  -------------
 Default   Active   10.0.0.0/16       VnetLocal
@@ -220,6 +231,8 @@ Default   Active   0.0.0.0/0         Internet
 ```
 ```
 az network nic show-effective-route-table -g sn-rg -n left-2809 -o table
+```
+```
 Source    State    Address Prefix    Next Hop Type    Next Hop IP
 --------  -------  ----------------  ---------------  -------------
 Default   Active   10.0.0.0/16       VnetLocal
@@ -305,9 +318,13 @@ Code: VnetAddressSpacesOverlap
 
 Now we will again establish the subnet-level peering as the previous section:
 
-`az network vnet peering create -g sn-rg -n left0-right0 --vnet-name vnet-left --local-subnet-names subnet1 --remote-subnet-names subnet0 subnet2 --remote-vne vnet-right --peer-complete-vnets 0 --allow-vnet-access 1`
+```
+az network vnet peering create -g sn-rg -n left0-right0 --vnet-name vnet-left --local-subnet-names subnet1 --remote-subnet-names subnet0 subnet2 --remote-vne vnet-right --peer-complete-vnets 0 --allow-vnet-access 1
+```
 
-`az network vnet peering create -g sn-rg -n right0-left0 --vnet-name vnet-right --local-subnet-names subnet0 subnet2 --remote-subnet-names subnet1 --remote-vne vnet-left --peer-complete-vnets 0 --allow-vnet-access 1`
+```
+az network vnet peering create -g sn-rg -n right0-left0 --vnet-name vnet-right --local-subnet-names subnet0 subnet2 --remote-subnet-names subnet1 --remote-vne vnet-left --peer-complete-vnets 0 --allow-vnet-access 1
+```
 
 This completes successfully despite the presence of overlapping address space in both vnets.
 ```
