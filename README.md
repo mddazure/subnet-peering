@@ -2,7 +2,7 @@
 
 ## The Basics: VNET Peering
 
-Virtual Networks in Azure can be connected thorugh [VNET Peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview). Peered VNETs become one routing domain, meaning that the entire IP space of each VNET is visible to and reachable from the other VNET. This is great for many applications: wire speed connectivity without gateways or other complexitiies.
+Virtual Networks in Azure can be connected thorugh [VNET Peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview). Peered VNETs become one routing domain, meaning that the entire IP space of each VNET is visible to and reachable from the other VNET. This is great for many applications: wire speed connectivity without gateways or other complexities.
 
 In this diagram, vnet-left and vnet-right are peered: 
 
@@ -133,6 +133,7 @@ az network vnet peering show -g sn-rg -n left0-right0 --vnet-name vnet-left
   "resourceGuid": "eb63ec9e-aa48-023e-1514-152f8ab39ae7",
   "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
   "useRemoteGateways": false
+}
 ```
 `az network vnet peering show -g sn-rg -n right0-left0 --vnet-name vnet-right `
 ```json
@@ -195,7 +196,7 @@ The peerings show in the portal as "normal" vnet peerings, as subnet peering is 
 
 ![images](/images/subnet-peering-left.png)
 
-The only indication that this is *not* a full vnet peering, is the peered IP address space - this is the subnet IP range of the remote subnet(s)
+The only indication that this is *not* a full vnet peering, is the peered IP address space - this is the subnet IP range of the remote subnet(s).
 
 ![images](/images/subnet-peering-left-ip-space.png)
 
@@ -316,7 +317,7 @@ Code: VnetAddressSpacesOverlap
 ```
 ![images](/images/vnet-peering-overlap.png)
 
-Now we will again establish the subnet-level peering as the previous section:
+Now we will again establish subnet-level peering as in the previous section:
 
 ```
 az network vnet peering create -g sn-rg -n left0-right0 --vnet-name vnet-left --local-subnet-names subnet1 --remote-subnet-names subnet0 subnet2 --remote-vne vnet-right --peer-complete-vnets 0 --allow-vnet-access 1
@@ -358,14 +359,16 @@ az network vnet peering create -g sn-rg -n left0-right0 --vnet-name vnet-left --
 (VnetAddressSpacesOverlap) Cannot create or update peering /subscriptions/7cb39d93-f8a1-48a7-af6d-c8e12136f0ad/resourceGroups/sn-rg/providers/Microsoft.Network/virtualNetworks/vnet-left/virtualNetworkPeerings/left0-right0. Virtual networks /subscriptions/7cb39d93-f8a1-48a7-af6d-c8e12136f0ad/resourceGroups/sn-rg/providers/Microsoft.Network/virtualNetworks/vnet-left and /subscriptions/7cb39d93-f8a1-48a7-af6d-c8e12136f0ad/resourceGroups/sn-rg/providers/Microsoft.Network/virtualNetworks/vnet-right cannot be peered because their address spaces overlap. Overlapping address prefixes: 172.16.3.0/24
 Code: VnetAddressSpacesOverlap
 ```
-This demonstrates that subnet peering is allows for the partial peering of vnets that contain overlapping ip space. As discussed, this can be very helpful in scenario's where private ip space is in short supply.
+This demonstrates that subnet peering allows for the partial peering of vnets that contain overlapping ip space.
+
+As discussed, this can be very helpful in scenario's where private ip space is in short supply.
 
 # Looking ahead
 Subnet peering is now available in all Azure regions: feel free to test, experiment and use in production.
 
-The feature is currently only available through the latest versions of the [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/network/vnet/peering?view=azure-cli-latest), [Bicep](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-bicep), [ARM template](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-bicep), [Terraform](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-terraform) and Powershell.
+The feature is currently only available through the latest versions of the [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/network/vnet/peering?view=azure-cli-latest), [Bicep](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-bicep), [ARM template](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-arm-template), [Terraform](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/virtualnetworkpeerings?pivots=deployment-language-terraform) and Powershell. Portal support should be added soon.
 
-Meaningful next steps will be to integrate Subnet Peering in both Azure Virtual Network Manager (AVNM) and Virtual WAN, so that the advantages it brings can be leveraged at enterpise scale in  nework foundations.
+Meaningful next steps will be to integrate Subnet Peering in both Azure Virtual Network Manager (AVNM) and Virtual WAN, so that the advantages it brings can be leveraged at enterprise scale in  nework foundations.
 
 I will continue to track developments and update this post as appropriate.
 
