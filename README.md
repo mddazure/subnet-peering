@@ -372,3 +372,44 @@ Meaningful next steps will be to integrate Subnet Peering in both Azure Virtual 
 
 I will continue to track developments and update this post as appropriate.
 
+# A scenario that does **not** work
+The ip space of the subnets listed in `--remote-subnet-names` is propagated to *all* subnets in the local vnet, not just to the subnets listed in `--local-subnet-names`. VMs on all subnets in the local vnet will have *specific routes to the individual subnets* in the remote vnet. This is a doumented limitation in the current release, see point 4 under [Subnet peering checks and limitations](https://learn.microsoft.com/en-us/azure/virtual-network/how-to-configure-subnet-peering#subnet-peering-checks-and-limitations).
+
+Consider requirement to filter traffic from all subnets in vnet-left to all subnets in vnet-right, through AzureFirewall in vnet-left. This requires a User Defined Route attached all subnets in vnet-left, pointing to the firewall address for vnet-right's address space. Conversely, a User Defined Route in vnet-right points to the firewall for vent-left's address space.
+
+Then only the AzureFirewallSubnet in vnet-left is peered with the subnets in vnet-right.
+
+![image](/images/subnet-peering-via-firewall.png)
+
+
+Because of the current limitation, the Effective Routes on VM left-0 look like this:
+```
+az network nic show-effective-route-table -g sn-rg -n left-0681 -o table
+Source    State    Address Prefix    Next Hop Type     Next Hop IP
+--------  -------  ----------------  ----------------  -------------
+Default   Active   10.0.0.0/16       VnetLocal
+Default   Active   172.16.0.0/16     VnetLocal
+Default   Active   10.1.0.0/24       VNetPeering
+Default   Active   10.1.1.0/24       VNetPeering
+Default   Active   10.1.2.0/24       VNetPeering
+Default   Active   0.0.0.0/0         Internet
+...
+User      Active   10.1.0.0/16       VirtualAppliance  10.0.4.4
+```
+Note the routes with next hop type `VnetPeering` for the individual subnets in vnet-right. These are more specific than the summary route for vnet-right's entire ip space pointing to the firewall, so will take precedence. Traffic from left-0 to any subnet in vnet-right will evade the firewalll.
+
+Effective Routes on VM right-1 are:
+```
+az network nic show-effective-route-table -g sn-rg -n right-159 -o table                                                                              
+Source    State    Address Prefix    Next Hop Type     Next Hop IP
+--------  -------  ----------------  ----------------  -------------
+Default   Active   10.1.0.0/16       VnetLocal
+Default   Active   172.16.0.0/16     VnetLocal
+Default   Active   10.0.4.0/26       VNetPeering
+Default   Active   0.0.0.0/0         Internet
+...
+User      Active   10.0.0.0/16       VirtualAppliance  10.0.4.4
+```
+Return traffic from right-1 to left-0 **will** flow to the firewall - and be dropped there because of the flow asymmetry.
+
+With the current limitation, either insert specific user routes in the vnet-left UDR for individual subnet ranges in vnet-right, or forego Subnet Peering altogther and simply peer the entire VNETs.
