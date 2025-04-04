@@ -413,3 +413,39 @@ User      Active   10.0.0.0/16       VirtualAppliance  10.0.4.4
 Return traffic from right-1 to left-0 **will** flow to the firewall - and be dropped there because of the flow asymmetry.
 
 With the current limitation, either insert specific user routes in the vnet-left UDR for individual subnet ranges in vnet-right, or forego Subnet Peering altogther and simply peer the entire VNETs.
+
+# Lab
+
+This deploys left and right vnets, with subnets and vm's as in the diagrams above. Peerings can then be deployed with the cli commands as described.
+
+Log in to Azure Cloud Shell at https://shell.azure.com/ and select Bash.
+
+Ensure Azure CLI and extensions are up to date:
+  
+      az upgrade --yes
+  
+If necessary select your target subscription:
+  
+      az account set --subscription <Name or ID of subscription>
+
+Clone the  GitHub repository: 
+
+      git clone https://github.com/mddazure/subnet-peering
+
+Change directory:
+
+      cd ./subnet-peering
+
+Deploy the Bicep template:
+
+      az deployment sub create --location swedencentral --template-file templates/main.bicep.
+
+Verify that all components in the diagram above have been deployed to the resourcegroup `subnet-peering-rg` and are healthy. 
+
+For all vm's:
+username: AzureAdmin
+password: S@bnet0!
+
+
+
+
