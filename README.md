@@ -445,9 +445,11 @@ Verify that all components in the diagram above have been deployed to the resour
 Credentials:
 
 username: 
+
       AzureAdmin
 
 password: 
+
       S@bnet0!
 
 
