@@ -442,10 +442,13 @@ Deploy the Bicep template:
 
 Verify that all components in the diagram above have been deployed to the resourcegroup `subnet-peering-rg` and are healthy. 
 
-For all vm's:
+Credentials:
 
-username: AzureAdmin
-password: S@bnet0!
+username: 
+      AzureAdmin
+
+password: 
+      S@bnet0!
 
 
 
