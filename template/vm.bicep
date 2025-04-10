@@ -63,5 +63,10 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-08-01' = {
         }
       ]
     }
+    diagnosticsProfile: {
+      bootDiagnostics: {
+        enabled: true
+      }
+    }
   }
 }
