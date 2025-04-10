@@ -11,7 +11,7 @@ param vnetSubnet2Range string
 param vnetSubnet3Name string 
 param vnetSubnet3Range string 
 
-resource vnet 'Microsoft.Network/virtualNetworks@2022-05-01' = {
+resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
   name: vnetName
   location: location
   properties: {
@@ -24,8 +24,9 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-05-01' = {
     subnets: [
       {
         name: vnetSubnet0Name
-        properties: {
+            properties: {
           addressPrefix: vnetSubnet0Range
+          defaultOutboundAccess: false
         }
       }
       {

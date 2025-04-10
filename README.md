@@ -438,7 +438,7 @@ Change directory:
 
 Deploy the Bicep template:
 
-      az deployment sub create --location swedencentral --template-file templates/main.bicep.
+      az deployment sub create --location swedencentral --template-file template/main.bicep
 
 Verify that all components in the diagram above have been deployed to the resourcegroup `subnet-peering-rg` and are healthy. 
 
